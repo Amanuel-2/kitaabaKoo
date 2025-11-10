@@ -1,0 +1,164 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
+import './Department.css';
+
+const Department = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { isTeacher, user } = useAuth();
+  const [department, setDepartment] = useState(null);
+  const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [downloading, setDownloading] = useState(null);
+
+  useEffect(() => {
+    fetchDepartmentData();
+  }, [id]);
+
+  const fetchDepartmentData = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get(`/departments/${id}`);
+      setDepartment(response.data.department);
+      setBooks(response.data.books);
+      setError('');
+    } catch (err) {
+      console.error('Error fetching department:', err);
+      setError('Failed to load department. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownload = async (book) => {
+    try {
+      setDownloading(book._id);
+      const response = await api.get(`/files/${book.fileId}`, {
+        responseType: 'blob',
+      });
+
+      // Create a blob URL and trigger download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', book.fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error downloading file:', err);
+      alert('Failed to download file. Please try again.');
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  const handleDelete = async (bookId) => {
+    if (!window.confirm('Are you sure you want to delete this book?')) {
+      return;
+    }
+
+    try {
+      await api.delete(`/books/${bookId}`);
+      setBooks(books.filter((book) => book._id !== bookId));
+    } catch (err) {
+      console.error('Error deleting book:', err);
+      alert('Failed to delete book. Please try again.');
+    }
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div>Loading...</div>
+      </div>
+    );
+  }
+
+  if (error || !department) {
+    return (
+      <div className="error-container">
+        <div className="error-message">{error || 'Department not found'}</div>
+        <button onClick={() => navigate('/')} className="back-button">
+          Back to Home
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="department-container">
+      <div className="department-header">
+        <button onClick={() => navigate('/')} className="back-button">
+          ← Back
+        </button>
+        <h1 className="page-title">{department.name}</h1>
+        {department.description && (
+          <p className="department-description">{department.description}</p>
+        )}
+      </div>
+
+      {books.length === 0 ? (
+        <div className="empty-state">
+          <p>No books available in this department yet.</p>
+          {isTeacher && (
+            <button
+              onClick={() => navigate('/upload')}
+              className="upload-button"
+            >
+              Upload First Book
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="books-list">
+          {books.map((book) => (
+            <div key={book._id} className="book-card">
+              <div className="book-info">
+                <h3 className="book-title">{book.title}</h3>
+                <p className="book-author">By {book.author}</p>
+                <p className="book-meta">
+                  Uploaded by {book.uploadedBy?.name || 'Unknown'} •{' '}
+                  {formatFileSize(book.fileSize)} •{' '}
+                  {new Date(book.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+              <div className="book-actions">
+                <button
+                  onClick={() => handleDownload(book)}
+                  className="download-button"
+                  disabled={downloading === book._id}
+                >
+                  {downloading === book._id ? 'Downloading...' : 'Download'}
+                </button>
+                {isTeacher && book.uploadedBy?._id?.toString() === user?.id?.toString() && (
+                  <button
+                    onClick={() => handleDelete(book._id)}
+                    className="delete-button"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Department;
+
