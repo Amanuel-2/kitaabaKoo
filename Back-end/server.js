@@ -8,13 +8,12 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
+// Middleware - allow CORS only from the front-end origin and expose/allow headers used for downloads and auth
 app.use(cors({
-  origin: 'http://localhost:3000',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['Content-Disposition'],
-  credentials: false
+  origin: process.env.FRONTEND_ORIGIN || 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Authorization', 'Content-Type'],
+  exposedHeaders: ['Content-Disposition', 'Content-Length']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -39,6 +38,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/departments', require('./routes/departments'));
 app.use('/api/books', require('./routes/books'));
 app.use('/api/files', require('./routes/files'));
+app.use('/api/debug', require('./routes/debug'));
 
 // Health check
 app.get('/api/health', (req, res) => {

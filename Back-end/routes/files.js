@@ -7,7 +7,13 @@ const Book = require('../models/Book');
 const router = express.Router();
 
 // allow CORS for this router (adds Access-Control-Allow-Origin header)
-router.use(cors());
+const allowedOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:3000';
+router.use(cors({
+  origin: allowedOrigin,
+  methods: ['GET', 'OPTIONS'],
+  allowedHeaders: ['Authorization', 'Content-Type'],
+  exposedHeaders: ['Content-Disposition', 'Content-Length']
+}));
 
 // respond to preflight
 router.options('/:fileId', cors());
@@ -16,6 +22,9 @@ router.options('/:fileId', cors());
 router.get('/:fileId', authenticate, async (req, res) => {
   try {
     const { fileId } = req.params;
+
+    // Debug logging to help diagnose CORS / download issues
+    console.log('Download request for fileId:', fileId, 'origin:', req.headers.origin, 'method:', req.method);
 
     // Verify the file belongs to a book
     const book = await Book.findOne({ fileId });
@@ -36,8 +45,9 @@ router.get('/:fileId', authenticate, async (req, res) => {
     const file = files[0];
 
   // Ensure CORS headers are present (in case global middleware wasn't applied)
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+  res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition, Content-Length');
 
   // Set headers for download
   res.setHeader('Content-Type', file.contentType || 'application/octet-stream');
