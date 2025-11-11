@@ -113,3 +113,4 @@ All API calls are made through the `api.js` service using Axios. The service aut
 - Responsive design with media queries
 - Modern, clean UI with consistent color scheme
 
+

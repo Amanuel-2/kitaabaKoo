@@ -73,28 +73,28 @@ const Home = () => {
           {departments
             .filter((d) => d.name.toLowerCase().includes(searchTerm.trim().toLowerCase()))
             .map((dept) => (
-            <div
-              key={dept._id}
-              className="department-card"
-              onClick={() => handleDepartmentClick(dept._id)}
-              style={dept.image ? { backgroundImage: `url(${dept.image})` } : undefined}
-              role="button"
-              tabIndex={0}
-              onKeyPress={(e) => { if (e.key === 'Enter') handleDepartmentClick(dept._id); }}
-              aria-label={`Open ${dept.name} department`}
-            >
-              {/* dark overlay for readability when background image is present */}
-              <div className="department-card-overlay" />
+              <div
+                key={dept._id}
+                className="department-card"
+                onClick={() => handleDepartmentClick(dept._id)}
+                style={dept.image ? { backgroundImage: `url(${dept.image})` } : undefined}
+                role="button"
+                tabIndex={0}
+                onKeyPress={(e) => { if (e.key === 'Enter') handleDepartmentClick(dept._id); }}
+                aria-label={`Open ${dept.name} department`}
+              >
+                {/* dark overlay for readability when background image is present */}
+                <div className="department-card-overlay" />
 
-              {/* department-specific icon shown for clarity and accessibility */}
-              <div className="department-icon">{getDepartmentIcon(dept.name)}</div>
+                {/* department-specific icon shown for clarity and accessibility */}
+                <div className="department-icon">{getDepartmentIcon(dept.name)}</div>
 
-              <h3 className="department-name">{dept.name}</h3>
-              {dept.description && (
-                <p className="department-description">{dept.description}</p>
-              )}
-            </div>
-          ))}
+                <h3 className="department-name">{dept.name}</h3>
+                {dept.description && (
+                  <p className="department-description">{dept.description}</p>
+                )}
+              </div>
+            ))}
         </div>
       )}
     </div>
@@ -145,4 +145,5 @@ function getDepartmentIcon(name) {
 
   return '📚';
 }
+
 

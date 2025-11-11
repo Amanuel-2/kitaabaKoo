@@ -1,9 +1,16 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const cors = require('cors');
 const { authenticate } = require('../middleware/auth');
 const Book = require('../models/Book');
 
 const router = express.Router();
+
+// allow CORS for this router (adds Access-Control-Allow-Origin header)
+router.use(cors());
+
+// respond to preflight
+router.options('/:fileId', cors());
 
 // Download file
 router.get('/:fileId', authenticate, async (req, res) => {
@@ -28,10 +35,14 @@ router.get('/:fileId', authenticate, async (req, res) => {
 
     const file = files[0];
 
-    // Set headers for download
-    res.setHeader('Content-Type', file.contentType || 'application/octet-stream');
-    res.setHeader('Content-Disposition', `attachment; filename="${book.fileName}"`);
-    res.setHeader('Content-Length', file.length);
+  // Ensure CORS headers are present (in case global middleware wasn't applied)
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+
+  // Set headers for download
+  res.setHeader('Content-Type', file.contentType || 'application/octet-stream');
+  res.setHeader('Content-Disposition', `attachment; filename="${book.fileName}"`);
+  res.setHeader('Content-Length', file.length);
 
     // Stream the file
     const downloadStream = gfs.openDownloadStream(new mongoose.Types.ObjectId(fileId));
@@ -52,4 +63,5 @@ router.get('/:fileId', authenticate, async (req, res) => {
 });
 
 module.exports = router;
+
 

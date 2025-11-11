@@ -117,3 +117,4 @@ npm run dev  # with nodemon for auto-reload
 - `isTeacher`: Ensures user is a teacher
 - `isStudent`: Ensures user is a student
 
+

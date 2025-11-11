@@ -99,3 +99,4 @@ const seedDepartments = async () => {
 seedDepartments();
 
 
+

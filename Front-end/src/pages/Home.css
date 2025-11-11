@@ -54,6 +54,7 @@
 }
 
 
+
 .department-card {
   position: relative;
   background: var(--card-glass-bg);
@@ -134,4 +135,5 @@
     font-size: 1.5rem;
   }
 }
+
 

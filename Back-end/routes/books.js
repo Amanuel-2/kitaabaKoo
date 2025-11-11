@@ -5,6 +5,7 @@ const multer = require('multer');
 const { GridFsStorage } = require('multer-gridfs-storage');
 const Book = require('../models/Book');
 const Department = require('../models/Department');
+const cors = require('cors');
 const { authenticate, isTeacher } = require('../middleware/auth');
 
 const router = express.Router();
@@ -52,6 +53,11 @@ const getUploadMiddleware = () => {
   }
   return upload;
 };
+
+// allow CORS for this router
+router.use(cors());
+router.options('/', cors());
+router.options('/:id', cors());
 
 // Get all books
 router.get('/', async (req, res) => {
@@ -188,3 +194,39 @@ router.post('/', authenticate, isTeacher, (req, res, next) => {
 });
 
 module.exports = router;
+
+// Delete book (only the uploader teacher can delete)
+router.delete('/:id', authenticate, isTeacher, async (req, res) => {
+  try {
+    const bookId = req.params.id;
+    const book = await Book.findById(bookId);
+    if (!book) {
+      return res.status(404).json({ message: 'Book not found' });
+    }
+
+    // Only allow the uploader to delete
+    if (book.uploadedBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'You are not authorized to delete this book' });
+    }
+
+    // Delete file from GridFS
+    const gfs = new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: 'uploads' });
+    try {
+      const fileId = book.fileId;
+      if (fileId) {
+        await gfs.delete(new mongoose.Types.ObjectId(fileId));
+      }
+    } catch (err) {
+      console.error('Error deleting file from GridFS:', err);
+      // continue to delete book record even if file cleanup fails
+    }
+
+    await Book.findByIdAndDelete(bookId);
+
+    res.json({ message: 'Book deleted' });
+  } catch (error) {
+    console.error('Delete book error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
