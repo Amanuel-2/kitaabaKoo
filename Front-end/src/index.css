@@ -22,6 +22,12 @@ body {
   --card-glass-bg: rgba(255,255,255,0.85);
   --card-border: rgba(0,0,0,0.08);
   --card-box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+
+  /* Navbar specific variables (light theme defaults) */
+  --navbar-text-color: #1f2937;
+  --navbar-text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+  --navbar-link-hover-bg: rgba(0,0,0,0.06);
+  --navbar-toggle-bg: rgba(0,0,0,0.06);
 }
 
 .theme-dark {
@@ -33,6 +39,12 @@ body {
   --card-glass-bg: rgba(255,255,255,0.03);
   --card-border: rgba(255,255,255,0.06);
   --card-box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+
+  /* Navbar dark theme */
+  --navbar-text-color: #ffffff;
+  --navbar-text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+  --navbar-link-hover-bg: rgba(255,255,255,0.06);
+  --navbar-toggle-bg: rgba(255,255,255,0.06);
 }
 
 .theme-light {
@@ -44,11 +56,26 @@ body {
   --card-glass-bg: rgba(255,255,255,0.85);
   --card-border: rgba(0,0,0,0.08);
   --card-box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+
+  /* Navbar light theme */
+  --navbar-text-color: #1f2937;
+  --navbar-text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+  --navbar-link-hover-bg: rgba(0,0,0,0.06);
+  --navbar-toggle-bg: rgba(0,0,0,0.06);
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Responsive helpers */
+img { max-width: 100%; height: auto; display: block; }
+
+@media (max-width: 480px) {
+  html { font-size: 14px; }
+  :root { --card-box-shadow: none; }
+}
+
 
 

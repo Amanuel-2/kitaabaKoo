@@ -92,7 +92,7 @@
 }
 
 .book-meta {
-  color: rgba(0,0,0,0.45);
+  color: var(--muted);
   font-size: 0.85rem;
 }
 

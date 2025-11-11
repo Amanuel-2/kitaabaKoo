@@ -1,11 +1,15 @@
 .navbar {
-  /* old book paper background */
-  background-image: url('https://www.freepik.com/free-photo/gradient-dark-blue-futuristic-digital-grid-background_17850177.htm#fromView=keyword&page=1&position=0&uuid=092b21b0-a558-46bc-9dab-f32d86b6924b&query=Linkedin+background');
+  /* Background: you provided a Freepik page link — that page isn't a direct image URL.
+    Use a downloaded Freepik image by placing it in public/ (e.g. /public/navbar-bg.jpg)
+    and replacing the URL below with '/navbar-bg.jpg'.
+    For live preview we use an Unsplash fallback (direct image URL) that matches the style. */
+  background-image: url('https://source.unsplash.com/1600x400/?gradient,digital,grid,blue');
   background-size: cover;
   background-position: center;
-  color: white;
+  color: var(--navbar-text-color);
   padding: 1rem 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 
 .navbar-container {
@@ -15,13 +19,25 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.navbar::before {
+  /* subtle overlay to ensure text contrast over busy backgrounds */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 1;
+  pointer-events: none;
 }
 
 .navbar-toggle {
   display: none;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: white;
+  background: var(--navbar-toggle-bg);
+  border: 1px solid var(--card-border);
+  color: var(--navbar-text-color);
   padding: 0.45rem 0.65rem;
   border-radius: 6px;
   cursor: pointer;
@@ -30,7 +46,7 @@
 .navbar-brand {
   font-size: 1.5rem;
   font-weight: bold;
-  color: white;
+  color: var(--navbar-text-color);
   text-decoration: none;
 }
 
@@ -46,8 +62,8 @@
 }
 
 .theme-button {
-  background: var(--card-bg);
-  color: var(--text-color);
+  background: var(--navbar-toggle-bg);
+  color: var(--navbar-text-color);
   border: 1px solid var(--card-border);
   padding: 0.4rem 0.6rem;
   border-radius: 6px;
@@ -59,7 +75,7 @@
 }
 
 .navbar-link {
-  color: white;
+  color: var(--navbar-text-color);
   text-decoration: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;
@@ -67,12 +83,13 @@
 }
 
 .navbar-link:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--navbar-link-hover-bg);
 }
 
 .navbar-user {
-  color: #ecf0f1;
+  color: var(--navbar-text-color);
   font-size: 0.9rem;
+  text-shadow: var(--navbar-text-shadow);
 }
 
 .navbar-button {
