@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import './Department.css';
+import CommentModal from '../components/CommentModal';
 
 const Department = () => {
   const { id } = useParams();
@@ -10,19 +11,28 @@ const Department = () => {
   const { isTeacher, user } = useAuth();
   const [department, setDepartment] = useState(null);
   const [books, setBooks] = useState([]);
+  const [openComments, setOpenComments] = useState({});
+  const [commentText, setCommentText] = useState({});
+  const [commentModalBook, setCommentModalBook] = useState(null);
   const [bookSearch, setBookSearch] = useState('');
+  const [filterYear, setFilterYear] = useState('');
+  const [filterSemester, setFilterSemester] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [downloading, setDownloading] = useState(null);
 
   useEffect(() => {
     fetchDepartmentData();
-  }, [id]);
+  }, [id, filterYear, filterSemester]);
 
   const fetchDepartmentData = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/departments/${id}`);
+      const params = new URLSearchParams();
+      if (filterYear) params.set('year', filterYear);
+      if (filterSemester) params.set('semester', filterSemester);
+      const qs = params.toString();
+      const response = await api.get(`/departments/${id}${qs ? `?${qs}` : ''}`);
       setDepartment(response.data.department);
       setBooks(response.data.books);
       setError('');
@@ -72,6 +82,36 @@ const Department = () => {
     }
   };
 
+  const handleToggleStar = async (bookId) => {
+    try {
+      const res = await api.post(`/books/${bookId}/star`);
+      if (res.data && res.data.success) {
+        const { starCount, stars } = res.data;
+        setBooks((prev) => prev.map((b) => (b._id === bookId ? { ...b, stars } : b)));
+      }
+    } catch (err) {
+      console.error('Error toggling star:', err);
+      alert('Failed to toggle favorite. Please try again.');
+    }
+  };
+
+  const handleAddComment = async (bookId) => {
+    const text = (commentText[bookId] || '').trim();
+    if (!text) return;
+    try {
+      const res = await api.post(`/books/${bookId}/comment`, { text });
+      if (res.data && res.data.success) {
+        const added = res.data.comment;
+        setBooks((prev) => prev.map((b) => (b._id === bookId ? { ...b, comments: [...(b.comments || []), added] } : b)));
+        setCommentText((prev) => ({ ...prev, [bookId]: '' }));
+        setOpenComments((prev) => ({ ...prev, [bookId]: true }));
+      }
+    } catch (err) {
+      console.error('Error adding comment:', err);
+      alert('Failed to add comment. Please try again.');
+    }
+  };
+
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -92,7 +132,7 @@ const Department = () => {
     return (
       <div className="error-container">
         <div className="error-message">{error || 'Department not found'}</div>
-        <button onClick={() => navigate('/')} className="back-button">
+        <button onClick={() => navigate('/home')} className="back-button">
           Back to Home
         </button>
       </div>
@@ -102,7 +142,7 @@ const Department = () => {
   return (
     <div className="department-container">
       <div className="department-header">
-        <button onClick={() => navigate('/')} className="back-button">
+        <button onClick={() => navigate('/home')} className="back-button">
           ← Back
         </button>
         <h1 className="page-title">{department.name}</h1>
@@ -120,6 +160,29 @@ const Department = () => {
           className="search-input"
           aria-label="Search books"
         />
+        <select
+          value={filterYear}
+          onChange={(e) => setFilterYear(e.target.value)}
+          className="filter-select year-select"
+          aria-label="Filter by year"
+        >
+          <option value="">All Years</option>
+          <option value="1">1st Year</option>
+          <option value="2">2nd Year</option>
+          <option value="3">3rd Year</option>
+          <option value="4">4th Year</option>
+          <option value="5">5th Year</option>
+        </select>
+        <select
+          value={filterSemester}
+          onChange={(e) => setFilterSemester(e.target.value)}
+          className="filter-select semester-select"
+          aria-label="Filter by semester"
+        >
+          <option value="">All Semesters</option>
+          <option value="1">1st Semester</option>
+          <option value="2">2nd Semester</option>
+        </select>
       </div>
 
       {books.filter(b => 
@@ -148,12 +211,31 @@ const Department = () => {
                 <h3 className="book-title">{book.title}</h3>
                 <p className="book-author">By {book.author}</p>
                 <p className="book-meta">
-                  Uploaded by {book.uploadedBy?.name || 'Unknown'} •{' '}
+                  Uploaded by {book.uploadedBy?.name || 'Unknown'} ({book.uploadedBy?.email || 'n/a'}) •{' '}
                   {formatFileSize(book.fileSize)} •{' '}
                   {new Date(book.createdAt).toLocaleDateString()}
+                  {book.year ? ` • Year ${book.year}` : ''}{book.semester ? ` • Semester ${book.semester}` : ''}
                 </p>
               </div>
               <div className="book-actions">
+                <div className="meta-actions">
+                  <button
+                    className={`star-button ${book.stars && book.stars.some(s => ((s._id ? s._id : s).toString()) === user?.id?.toString()) ? 'starred' : ''}`}
+                    onClick={() => handleToggleStar(book._id)}
+                    title="Toggle favorite"
+                  >
+                    ★ {book.stars ? book.stars.length : 0}
+                  </button>
+
+                  <button
+                    className="comment-toggle"
+                    onClick={() => setCommentModalBook(book)}
+                    title="Open comments"
+                  >
+                    💬 {book.comments ? book.comments.length : 0}
+                  </button>
+                </div>
+
                 <button
                   onClick={() => handleDownload(book)}
                   className="download-button"
@@ -161,6 +243,7 @@ const Department = () => {
                 >
                   {downloading === book._id ? 'Downloading...' : 'Download'}
                 </button>
+
                 {isTeacher && book.uploadedBy?._id?.toString() === user?.id?.toString() && (
                   <button
                     onClick={() => handleDelete(book._id)}
@@ -170,13 +253,25 @@ const Department = () => {
                   </button>
                 )}
               </div>
+
+              {/* comments are shown in a modal/page for better mobile UX */}
             </div>
           ))}
         </div>
+      )}
+      {commentModalBook && (
+        <CommentModal
+          book={commentModalBook}
+          onClose={() => setCommentModalBook(null)}
+          onAddComment={(bookId, comment) => {
+            setBooks((prev) => prev.map((b) => (b._id === bookId ? { ...b, comments: [...(b.comments || []), comment] } : b)));
+          }}
+        />
       )}
     </div>
   );
 };
 
 export default Department;
+
 

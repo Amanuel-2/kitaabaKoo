@@ -1,5 +1,8 @@
 .navbar {
-  background-color: #2c3e50;
+  /* old book paper background */
+  background-image: url('https://www.freepik.com/free-photo/gradient-dark-blue-futuristic-digital-grid-background_17850177.htm#fromView=keyword&page=1&position=0&uuid=092b21b0-a558-46bc-9dab-f32d86b6924b&query=Linkedin+background');
+  background-size: cover;
+  background-position: center;
   color: white;
   padding: 1rem 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -14,6 +17,16 @@
   align-items: center;
 }
 
+.navbar-toggle {
+  display: none;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: white;
+  padding: 0.45rem 0.65rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
 .navbar-brand {
   font-size: 1.5rem;
   font-weight: bold;
@@ -25,6 +38,24 @@
   display: flex;
   align-items: center;
   gap: 1.5rem;
+}
+
+.navbar-theme-toggle {
+  margin-left: auto;
+  margin-right: 1rem;
+}
+
+.theme-button {
+  background: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--card-border);
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.theme-button:hover {
+  filter: brightness(0.95);
 }
 
 .navbar-link {
@@ -67,10 +98,20 @@
   }
 
   .navbar-menu {
-    flex-wrap: wrap;
-    justify-content: center;
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
     gap: 0.5rem;
   }
+
+  .navbar-menu.open {
+    display: flex;
+  }
+
+  .navbar-toggle { display: inline-block; }
+
+  .navbar-link { display: block; text-align: center; padding: 0.6rem; }
 }
 
 

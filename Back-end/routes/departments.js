@@ -24,8 +24,15 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ message: 'Department not found' });
     }
 
-    const books = await Book.find({ department: req.params.id })
+    const { year, semester } = req.query;
+    const query = { department: req.params.id };
+    if (year) query.year = Number(year);
+    if (semester) query.semester = Number(semester);
+
+    const books = await Book.find(query)
       .populate('uploadedBy', 'name email')
+      .populate('stars', 'name')
+      .populate('comments.user', 'name')
       .sort({ createdAt: -1 });
 
     res.json({

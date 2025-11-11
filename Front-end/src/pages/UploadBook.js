@@ -12,6 +12,8 @@ const UploadBook = () => {
     title: '',
     author: '',
     department: '',
+    year: '',
+    semester: '',
     file: null
   });
   const [loading, setLoading] = useState(false);
@@ -20,7 +22,7 @@ const UploadBook = () => {
 
   useEffect(() => {
     if (!isTeacher) {
-      navigate('/');
+      navigate('/home');
       return;
     }
     fetchDepartments();
@@ -56,8 +58,8 @@ const UploadBook = () => {
     setError('');
     setSuccess(false);
 
-    if (!formData.title || !formData.author || !formData.department || !formData.file) {
-      setError('Please fill in all fields and select a file');
+    if (!formData.title || !formData.author || !formData.department || !formData.year || !formData.semester || !formData.file) {
+      setError('Please fill in all fields (including year and semester) and select a file');
       return;
     }
 
@@ -75,6 +77,8 @@ const UploadBook = () => {
       uploadData.append('title', formData.title);
       uploadData.append('author', formData.author);
       uploadData.append('department', formData.department);
+      uploadData.append('year', formData.year);
+      uploadData.append('semester', formData.semester);
       uploadData.append('file', formData.file);
 
       // Don't set Content-Type header - let Axios set it automatically with boundary
@@ -87,6 +91,8 @@ const UploadBook = () => {
         title: '',
         author: '',
         department: '',
+        year: '',
+        semester: '',
         file: null
       });
 
@@ -156,6 +162,37 @@ const UploadBook = () => {
                   {dept.name}
                 </option>
               ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label htmlFor="year">Year *</label>
+            <select
+              id="year"
+              name="year"
+              value={formData.year}
+              onChange={handleInputChange}
+              required
+            >
+              <option value="">Select year</option>
+              <option value="1">1st Year</option>
+              <option value="2">2nd Year</option>
+              <option value="3">3rd Year</option>
+              <option value="4">4th Year</option>
+              <option value="5">5th Year</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label htmlFor="semester">Semester *</label>
+            <select
+              id="semester"
+              name="semester"
+              value={formData.semester}
+              onChange={handleInputChange}
+              required
+            >
+              <option value="">Select semester</option>
+              <option value="1">1st Semester</option>
+              <option value="2">2nd Semester</option>
             </select>
           </div>
           <div className="form-group">

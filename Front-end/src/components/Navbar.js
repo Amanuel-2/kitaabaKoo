@@ -8,6 +8,7 @@ const Navbar = () => {
   const { user, logout, isTeacher } = useAuth();
   const navigate = useNavigate();
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -36,10 +37,13 @@ const Navbar = () => {
             {theme === 'dark' ? '🌙' : '☀️'}
           </button>
         </div>
-        <div className="navbar-menu">
+        <button className="navbar-toggle" aria-label="Toggle menu" onClick={() => setMenuOpen(!menuOpen)}>
+          ☰
+        </button>
+        <div className={`navbar-menu ${menuOpen ? 'open' : ''}`}>
           {user ? (
             <>
-              <Link to="/" className="navbar-link">
+              <Link to="/home" className="navbar-link">
                 Home
               </Link>
               {isTeacher && (
@@ -50,7 +54,7 @@ const Navbar = () => {
               <span className="navbar-user">
                 {user.name} ({user.role})
               </span>
-              <button onClick={handleLogout} className="navbar-button">
+              <button onClick={() => { setMenuOpen(false); handleLogout(); }} className="navbar-button">
                 Logout
               </button>
             </>

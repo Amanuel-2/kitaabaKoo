@@ -62,11 +62,16 @@ router.options('/:id', cors());
 // Get all books
 router.get('/', async (req, res) => {
   try {
-    const { department } = req.query;
-    const query = department ? { department } : {};
+    const { department, year, semester } = req.query;
+    const query = {};
+    if (department) query.department = department;
+    if (year) query.year = Number(year);
+    if (semester) query.semester = Number(semester);
     const books = await Book.find(query)
       .populate('department', 'name')
       .populate('uploadedBy', 'name email')
+      .populate('stars', 'name')
+      .populate('comments.user', 'name')
       .sort({ createdAt: -1 });
     res.json(books);
   } catch (error) {
@@ -111,7 +116,7 @@ router.post('/', authenticate, isTeacher, (req, res, next) => {
     }
 
     // Extract form data
-    const { title, author, department } = req.body;
+    const { title, author, department, year, semester } = req.body;
     
     // Validate required fields
     if (!title || !author || !department) {
@@ -155,7 +160,9 @@ router.post('/', authenticate, isTeacher, (req, res, next) => {
       fileId: fileId,
       fileName: req.file.filename,
       fileSize: req.file.size,
-      mimeType: req.file.mimetype
+      mimeType: req.file.mimetype,
+      year: year ? Number(year) : undefined,
+      semester: semester ? Number(semester) : undefined
     });
 
     // Save book
@@ -226,6 +233,59 @@ router.delete('/:id', authenticate, isTeacher, async (req, res) => {
     res.json({ message: 'Book deleted' });
   } catch (error) {
     console.error('Delete book error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Toggle star (favorite) for a book
+router.post('/:id/star', authenticate, async (req, res) => {
+  try {
+    const bookId = req.params.id;
+    const userId = req.user._id;
+    const book = await Book.findById(bookId);
+    if (!book) return res.status(404).json({ message: 'Book not found' });
+
+    const existingIndex = book.stars.findIndex((u) => u.toString() === userId.toString());
+    let added = false;
+    if (existingIndex >= 0) {
+      // remove star
+      book.stars.splice(existingIndex, 1);
+      added = false;
+    } else {
+      // add star
+      book.stars.push(userId);
+      added = true;
+    }
+
+    await book.save();
+    const populated = await Book.findById(book._id).populate('stars', 'name');
+    res.json({ success: true, added, starCount: populated.stars.length, stars: populated.stars });
+  } catch (error) {
+    console.error('Star error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Add a comment to a book
+router.post('/:id/comment', authenticate, async (req, res) => {
+  try {
+    const bookId = req.params.id;
+    const { text } = req.body;
+    if (!text || !text.trim()) return res.status(400).json({ message: 'Comment text is required' });
+
+    const book = await Book.findById(bookId);
+    if (!book) return res.status(404).json({ message: 'Book not found' });
+
+    const comment = { user: req.user._id, text: text.trim(), createdAt: new Date() };
+    book.comments.push(comment);
+    await book.save();
+
+    // populate the last comment's user name
+    const populated = await Book.findById(book._id).populate('comments.user', 'name');
+    const addedComment = populated.comments[populated.comments.length - 1];
+    res.status(201).json({ success: true, comment: addedComment });
+  } catch (error) {
+    console.error('Comment error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
