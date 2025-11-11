@@ -16,7 +16,7 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-brand">
-          📚 University Library
+          kitaabaKoo
         </Link>
         <div className="navbar-menu">
           {user ? (

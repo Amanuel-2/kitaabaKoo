@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -25,10 +26,7 @@ const connectDB = async () => {
     process.exit(1);
   }
 };
-
 connectDB();
-
-// GridFS will be initialized in routes when needed
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
@@ -45,4 +43,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-

@@ -77,26 +77,26 @@ const UploadBook = () => {
       uploadData.append('department', formData.department);
       uploadData.append('file', formData.file);
 
-      await api.post('/books', uploadData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      // Don't set Content-Type header - let Axios set it automatically with boundary
+      await api.post('/books', uploadData);
 
       setSuccess(true);
+      // capture selected department before clearing formData
+      const selectedDepartment = formData.department;
       setFormData({
         title: '',
         author: '',
         department: '',
         file: null
       });
-      
+
       // Reset file input
       const fileInput = document.getElementById('file');
       if (fileInput) fileInput.value = '';
 
       setTimeout(() => {
-        navigate(`/department/${formData.department}`);
+        // navigate using captured department id
+        navigate(`/department/${selectedDepartment}`);
       }, 2000);
     } catch (err) {
       console.error('Error uploading book:', err);
