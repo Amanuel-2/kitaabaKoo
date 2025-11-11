@@ -2,10 +2,19 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
+import { useState, useEffect } from 'react';
 
 const Navbar = () => {
   const { user, logout, isTeacher } = useAuth();
   const navigate = useNavigate();
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.remove('theme-light', 'theme-dark');
+    root.classList.add(theme === 'dark' ? 'theme-dark' : 'theme-light');
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   const handleLogout = () => {
     logout();
@@ -18,6 +27,15 @@ const Navbar = () => {
         <Link to="/" className="navbar-brand">
           kitaabaKoo
         </Link>
+        <div className="navbar-theme-toggle">
+          <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="theme-button"
+            aria-label="Toggle color theme"
+          >
+            {theme === 'dark' ? '🌙' : '☀️'}
+          </button>
+        </div>
         <div className="navbar-menu">
           {user ? (
             <>

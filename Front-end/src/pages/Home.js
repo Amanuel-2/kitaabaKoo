@@ -5,6 +5,7 @@ import './Home.css';
 
 const Home = () => {
   const [departments, setDepartments] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -53,19 +54,41 @@ const Home = () => {
   return (
     <div className="home-container">
       <h1 className="page-title">Departments</h1>
+      <div className="home-controls">
+        <input
+          type="search"
+          placeholder="Search departments..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-input"
+          aria-label="Search departments"
+        />
+      </div>
       {departments.length === 0 ? (
         <div className="empty-state">
           <p>No departments available yet.</p>
         </div>
       ) : (
         <div className="departments-grid">
-          {departments.map((dept) => (
+          {departments
+            .filter((d) => d.name.toLowerCase().includes(searchTerm.trim().toLowerCase()))
+            .map((dept) => (
             <div
               key={dept._id}
               className="department-card"
               onClick={() => handleDepartmentClick(dept._id)}
+              style={dept.image ? { backgroundImage: `url(${dept.image})` } : undefined}
+              role="button"
+              tabIndex={0}
+              onKeyPress={(e) => { if (e.key === 'Enter') handleDepartmentClick(dept._id); }}
+              aria-label={`Open ${dept.name} department`}
             >
-              <div className="department-icon">📚</div>
+              {/* dark overlay for readability when background image is present */}
+              <div className="department-card-overlay" />
+
+              {/* department-specific icon shown for clarity and accessibility */}
+              <div className="department-icon">{getDepartmentIcon(dept.name)}</div>
+
               <h3 className="department-name">{dept.name}</h3>
               {dept.description && (
                 <p className="department-description">{dept.description}</p>
@@ -79,4 +102,47 @@ const Home = () => {
 };
 
 export default Home;
+
+// Helper: map department names to appropriate icons (emoji fallback)
+function getDepartmentIcon(name) {
+  if (!name) return '📚';
+  const map = {
+    'computer science': '💻',
+    'information technology': '🖧',
+    'business information systems': '📊',
+    'civil engineering': '🏗️',
+    'information systems': '🗂️',
+    'logistics': '🚚',
+    'midwifery': '🤱',
+    'nursing': '🩺',
+    'business administration': '💼',
+    'medicine': '⚕️',
+    'mechanical engineering': '⚙️',
+    'electrical engineering': '⚡',
+    'architecture': '🏛️',
+    'economics': '📈',
+    'law': '⚖️',
+    'psychology': '🧠',
+    'education': '🎓',
+    'pharmacy': '💊',
+    'environmental science': '🌿',
+    'mathematics': '➗',
+    'physics': '🔬',
+    'chemistry': '🧪',
+    'biology': '🧬',
+    'history': '🏺',
+    'sociology': '👥',
+    'political science': '🗳️',
+    'literature': '📚',
+    'languages and linguistics': '🗣️'
+  };
+
+  const lower = name.toLowerCase();
+  // exact or partial match
+  for (const key of Object.keys(map)) {
+    if (lower.includes(key)) return map[key];
+  }
+
+  return '📚';
+}
 

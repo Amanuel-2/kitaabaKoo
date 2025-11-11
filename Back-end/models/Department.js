@@ -11,6 +11,12 @@ const departmentSchema = new mongoose.Schema({
     type: String,
     trim: true
   }
+  ,
+  image: {
+    type: String,
+    trim: true,
+    default: ''
+  }
 }, {
   timestamps: true
 });

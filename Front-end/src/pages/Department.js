@@ -10,6 +10,7 @@ const Department = () => {
   const { isTeacher, user } = useAuth();
   const [department, setDepartment] = useState(null);
   const [books, setBooks] = useState([]);
+  const [bookSearch, setBookSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [downloading, setDownloading] = useState(null);
@@ -110,7 +111,21 @@ const Department = () => {
         )}
       </div>
 
-      {books.length === 0 ? (
+      <div className="department-controls">
+        <input
+          type="search"
+          placeholder="Search books by title or author..."
+          value={bookSearch}
+          onChange={(e) => setBookSearch(e.target.value)}
+          className="search-input"
+          aria-label="Search books"
+        />
+      </div>
+
+      {books.filter(b => 
+          b.title.toLowerCase().includes(bookSearch.trim().toLowerCase()) ||
+          b.author.toLowerCase().includes(bookSearch.trim().toLowerCase())
+        ).length === 0 ? (
         <div className="empty-state">
           <p>No books available in this department yet.</p>
           {isTeacher && (
@@ -124,7 +139,10 @@ const Department = () => {
         </div>
       ) : (
         <div className="books-list">
-          {books.map((book) => (
+          {books.filter(b => 
+            b.title.toLowerCase().includes(bookSearch.trim().toLowerCase()) ||
+            b.author.toLowerCase().includes(bookSearch.trim().toLowerCase())
+          ).map((book) => (
             <div key={book._id} className="book-card">
               <div className="book-info">
                 <h3 className="book-title">{book.title}</h3>
