@@ -4,16 +4,19 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import './Department.css';
 import CommentModal from '../components/CommentModal';
+import EditBookModal from '../components/EditBookModal';
 
 const Department = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isTeacher, user } = useAuth();
+  const { isTeacher, user, fetchUser } = useAuth();
   const [department, setDepartment] = useState(null);
   const [books, setBooks] = useState([]);
   const [openComments, setOpenComments] = useState({});
   const [commentText, setCommentText] = useState({});
   const [commentModalBook, setCommentModalBook] = useState(null);
+  const [editModalBook, setEditModalBook] = useState(null);
+  const [openActionId, setOpenActionId] = useState(null);
   const [bookSearch, setBookSearch] = useState('');
   const [filterYear, setFilterYear] = useState('');
   const [filterSemester, setFilterSemester] = useState('');
@@ -88,6 +91,8 @@ const Department = () => {
       if (res.data && res.data.success) {
         const { starCount, stars } = res.data;
         setBooks((prev) => prev.map((b) => (b._id === bookId ? { ...b, stars } : b)));
+        // refresh user favorites in context
+        try { await fetchUser(); } catch (e) { /* ignore */ }
       }
     } catch (err) {
       console.error('Error toggling star:', err);
@@ -217,6 +222,17 @@ const Department = () => {
                   {book.year ? ` • Year ${book.year}` : ''}{book.semester ? ` • Semester ${book.semester}` : ''}
                 </p>
               </div>
+              {/* quick action icons shown above the card */}
+              <div className="quick-actions" aria-hidden>
+                <button className="quick-action" title="Download" onClick={() => handleDownload(book)}>⬇️</button>
+                {isTeacher && book.uploadedBy?._id?.toString() === user?.id?.toString() && (
+                  <>
+                    <button className="quick-action" title="Edit" onClick={() => setEditModalBook(book)}>✏️</button>
+                    <button className="quick-action delete-quick" title="Delete" onClick={() => handleDelete(book._id)}>🗑️</button>
+                  </>
+                )}
+              </div>
+
               <div className="book-actions">
                 <div className="meta-actions">
                   <button
@@ -224,7 +240,7 @@ const Department = () => {
                     onClick={() => handleToggleStar(book._id)}
                     title="Toggle favorite"
                   >
-                    ★ {book.stars ? book.stars.length : 0}
+                    {book.stars && book.stars.some(s => ((s._id ? s._id : s).toString()) === user?.id?.toString()) ? '❤️' : '🤍'} {book.stars ? book.stars.length : 0}
                   </button>
 
                   <button
@@ -235,23 +251,53 @@ const Department = () => {
                     💬 {book.comments ? book.comments.length : 0}
                   </button>
                 </div>
-
-                <button
-                  onClick={() => handleDownload(book)}
-                  className="download-button"
-                  disabled={downloading === book._id}
-                >
-                  {downloading === book._id ? 'Downloading...' : 'Download'}
-                </button>
-
-                {isTeacher && book.uploadedBy?._id?.toString() === user?.id?.toString() && (
+                {/* Action menu: compact hamburger that reveals download/edit/delete */}
+                <div className="action-menu">
                   <button
-                    onClick={() => handleDelete(book._id)}
-                    className="delete-button"
+                    className="action-menu-button"
+                    aria-haspopup="true"
+                    aria-expanded={openActionId === book._id}
+                    onClick={() => setOpenActionId(openActionId === book._id ? null : book._id)}
+                    title="More actions"
                   >
-                    Delete
+                    ☰
                   </button>
-                )}
+
+                  {openActionId === book._id && (
+                    <div className="action-dropdown" role="menu">
+                      <button
+                        className="action-item"
+                        onClick={() => { setOpenActionId(null); handleDownload(book); }}
+                        role="menuitem"
+                      >
+                        <span className="action-icon">⬇️</span>
+                        <span>Download</span>
+                      </button>
+
+                      {isTeacher && book.uploadedBy?._id?.toString() === user?.id?.toString() && (
+                        <>
+                          <button
+                            className="action-item"
+                            onClick={() => { setOpenActionId(null); setEditModalBook(book); }}
+                            role="menuitem"
+                          >
+                            <span className="action-icon">✏️</span>
+                            <span>Edit</span>
+                          </button>
+
+                          <button
+                            className="action-item"
+                            onClick={() => { setOpenActionId(null); handleDelete(book._id); }}
+                            role="menuitem"
+                          >
+                            <span className="action-icon">🗑️</span>
+                            <span>Delete</span>
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* comments are shown in a modal/page for better mobile UX */}
@@ -265,6 +311,15 @@ const Department = () => {
           onClose={() => setCommentModalBook(null)}
           onAddComment={(bookId, comment) => {
             setBooks((prev) => prev.map((b) => (b._id === bookId ? { ...b, comments: [...(b.comments || []), comment] } : b)));
+          }}
+        />
+      )}
+      {editModalBook && (
+        <EditBookModal
+          book={editModalBook}
+          onClose={() => setEditModalBook(null)}
+          onSaved={(updated) => {
+            setBooks((prev) => prev.map((b) => (b._id === updated._id ? updated : b)));
           }}
         />
       )}

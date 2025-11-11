@@ -99,12 +99,19 @@ router.post('/login', async (req, res) => {
 // Get current user
 router.get('/me', authenticate, async (req, res) => {
   try {
+    // populate favorites for client convenience
+    const fullUser = await User.findById(req.user._id).populate({
+      path: 'favorites',
+      populate: [{ path: 'department', select: 'name' }]
+    });
+
     res.json({
       user: {
-        id: req.user._id,
-        name: req.user.name,
-        email: req.user.email,
-        role: req.user.role
+        id: fullUser._id,
+        name: fullUser.name,
+        email: fullUser.email,
+        role: fullUser.role,
+        favorites: fullUser.favorites || []
       }
     });
   } catch (error) {

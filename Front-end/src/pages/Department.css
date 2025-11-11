@@ -73,7 +73,28 @@
   border: 1px solid var(--card-border);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
+  position: relative; /* allow absolute children like action menu */
 }
+
+.quick-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 0.4rem;
+  z-index: 40;
+}
+.quick-action {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--card-border);
+  color: var(--text-color);
+  padding: 0.35rem 0.45rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.delete-quick { background: rgba(255,100,100,0.08); }
+
 
 .book-info {
   flex: 1;
@@ -100,6 +121,43 @@
   display: flex;
   gap: 0.5rem;
 }
+
+.action-menu { position: absolute; top: 8px; right: 8px; z-index: 30; }
+.action-menu-button {
+  background: transparent;
+  border: 1px solid var(--card-border);
+  padding: 0.45rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-color);
+}
+.action-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 160px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+  overflow: hidden;
+}
+.action-item {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.55rem 0.75rem;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-color);
+}
+.action-item:hover { background: var(--card-glass-bg); }
+.action-icon { font-size: 1rem; }
 
 .meta-actions { display: flex; gap: 0.5rem; align-items: center; margin-right: 0.5rem; }
 .star-button { background: transparent; border: 1px solid var(--card-border); padding: 0.4rem 0.6rem; border-radius: 6px; cursor: pointer; font-weight: 700; }

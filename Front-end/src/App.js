@@ -6,6 +6,7 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Welcome from './pages/Welcome';
 import Department from './pages/Department';
+import Favorites from './pages/Favorites';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import UploadBook from './pages/UploadBook';
@@ -27,6 +28,14 @@ function App() {
                 element={
                   <PrivateRoute>
                     <Home />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/favorites"
+                element={
+                  <PrivateRoute>
+                    <Favorites />
                   </PrivateRoute>
                 }
               />

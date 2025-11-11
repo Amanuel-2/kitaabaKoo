@@ -46,6 +46,9 @@ const Navbar = () => {
               <Link to="/home" className="navbar-link">
                 Home
               </Link>
+              <Link to="/favorites" className="navbar-link">
+                Favorites
+              </Link>
               {isTeacher && (
                 <Link to="/upload" className="navbar-link">
                   Upload Book

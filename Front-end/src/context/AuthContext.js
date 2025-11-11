@@ -44,7 +44,9 @@ export const AuthProvider = ({ children }) => {
       
       localStorage.setItem('token', newToken);
       setToken(newToken);
+      // set minimal user then fetch full profile (including favorites)
       setUser(userData);
+      await fetchUser();
       api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
       
       return { success: true };
@@ -68,7 +70,9 @@ export const AuthProvider = ({ children }) => {
       
       localStorage.setItem('token', newToken);
       setToken(newToken);
+      // set minimal user then fetch full profile (including favorites)
       setUser(userData);
+      await fetchUser();
       api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
       
       return { success: true };
@@ -94,7 +98,8 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     isTeacher: user?.role === 'teacher',
-    isStudent: user?.role === 'student'
+    isStudent: user?.role === 'student',
+    fetchUser
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

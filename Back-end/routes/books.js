@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const { GridFsStorage } = require('multer-gridfs-storage');
 const Book = require('../models/Book');
+const User = require('../models/User');
 const Department = require('../models/Department');
 const cors = require('cors');
 const { authenticate, isTeacher } = require('../middleware/auth');
@@ -244,24 +245,74 @@ router.post('/:id/star', authenticate, async (req, res) => {
     const userId = req.user._id;
     const book = await Book.findById(bookId);
     if (!book) return res.status(404).json({ message: 'Book not found' });
-
     const existingIndex = book.stars.findIndex((u) => u.toString() === userId.toString());
     let added = false;
     if (existingIndex >= 0) {
-      // remove star
+      // remove star from book
       book.stars.splice(existingIndex, 1);
       added = false;
     } else {
-      // add star
+      // add star to book
       book.stars.push(userId);
       added = true;
     }
 
     await book.save();
+
+    // Also maintain user's favorites list for quick access
+    try {
+      const user = await User.findById(userId);
+      if (user) {
+        const favIndex = user.favorites.findIndex((b) => b.toString() === bookId.toString());
+        if (added && favIndex === -1) {
+          user.favorites.push(bookId);
+          await user.save();
+        } else if (!added && favIndex >= 0) {
+          user.favorites.splice(favIndex, 1);
+          await user.save();
+        }
+      }
+    } catch (uErr) {
+      console.error('Failed to update user favorites:', uErr);
+    }
+
     const populated = await Book.findById(book._id).populate('stars', 'name');
     res.json({ success: true, added, starCount: populated.stars.length, stars: populated.stars });
   } catch (error) {
     console.error('Star error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Edit book metadata (only uploader teacher can edit)
+router.put('/:id', authenticate, isTeacher, async (req, res) => {
+  try {
+    const bookId = req.params.id;
+    const { title, author, year, semester, department } = req.body;
+    const book = await Book.findById(bookId);
+    if (!book) return res.status(404).json({ message: 'Book not found' });
+
+    // Only uploader allowed to edit
+    if (book.uploadedBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'You are not authorized to edit this book' });
+    }
+
+    if (title) book.title = title.trim();
+    if (author) book.author = author.trim();
+    if (typeof year !== 'undefined' && year !== null) book.year = Number(year);
+    if (typeof semester !== 'undefined' && semester !== null) book.semester = Number(semester);
+    if (department) book.department = department;
+
+    await book.save();
+    const populated = await Book.findById(book._id)
+      .populate('department', 'name')
+      .populate('uploadedBy', 'name email')
+      .populate('stars', 'name')
+      .populate('comments.user', 'name');
+
+    res.json({ success: true, book: populated });
+  } catch (error) {
+    console.error('Edit book error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

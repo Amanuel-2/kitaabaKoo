@@ -25,6 +25,14 @@ const userSchema = new mongoose.Schema({
     required: true,
     default: 'student'
   }
+  ,
+  // list of favorited book ids for quick access
+  favorites: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Book'
+    }
+  ]
 }, {
   timestamps: true
 });
