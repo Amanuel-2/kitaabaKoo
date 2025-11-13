@@ -1,4 +1,16 @@
 # University Library System - MERN Stack Application
+<p align="center">
+  <!-- 🖼️ Replace each image path below with your actual image files or URLs -->
+
+  <!-- Welcome Page -->
+  <img src="./Front-end/src/img/img1.png" alt="Welcome Page Screenshot" width="700"/>
+
+  <!-- Login Page -->
+  <img src="./Front-end/src/img/img2.png" alt="Login Page Screenshot" width="700"/>
+
+  <!-- After Login Page -->
+  <img src="./Front-end/src/img/img3.png" alt="Dashboard or After Login Screenshot" width="700"/>
+</p>
 
 A full-stack web application for managing a university library system with role-based access control. Teachers can upload books, and students can browse and download them.
 
